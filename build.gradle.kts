@@ -46,7 +46,11 @@ tasks.test {
 
 tasks.jar {
     manifest {
-        attributes["Main-Class"] = "uz.ibrohim.food.HomeKt" // Masalan: "com.foodapp.AsosiyKt"
+        attributes["Main-Class"] = "uz.ibrohim.food.HomeKt"
+    }
+    // QUYIDAGI QATOR KUTUBXONALARNI JAR FAYLIGA QO'SHADI:
+    from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) }) {
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     }
 }
 
