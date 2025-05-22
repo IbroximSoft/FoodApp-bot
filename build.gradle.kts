@@ -43,6 +43,13 @@ application {  // ✅ To‘g‘ri ishlatish
 tasks.test {
     useJUnitPlatform()
 }
+
+tasks.jar {
+    manifest {
+        attributes["Main-Class"] = "uz.ibrohim.food.HomeKt" // Masalan: "com.foodapp.AsosiyKt"
+    }
+}
+
 kotlin {
     jvmToolchain(17)
 }
