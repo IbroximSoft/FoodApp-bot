@@ -45,30 +45,15 @@ application {  // ✅ To‘g‘ri ishlatish
 tasks.test {
     useJUnitPlatform()
 }
+
 tasks.shadowJar {
-    archiveBaseName.set("FoodBot")
-    archiveClassifier.set("fat")
-    archiveVersion.set(project.version.toString()) // Loyiha versiyasini avtomatik oladi
-    mergeServiceFiles()
     manifest {
         attributes(mapOf("Main-Class" to "uz.ibrohim.food.HomeKt"))
     }
+    // archiveBaseName, archiveClassifier, archiveVersion, mergeServiceFiles ni vaqtincha olib turing
 }
 
-tasks.named("jar") {
-    enabled = false // Standart jar vazifasini o'chiramiz
-}
-tasks.named("shadowJar") {
-    val shadowTask = this
-    tasks.named("assemble") { // Asosiy 'assemble' vazifasini shadowJar'ga bog'laymiz
-        dependsOn(shadowTask)
-    }
-    // Bu classifier'ni olib tashlasak, standart nom bilan fayl yaratadi (masalan, FoodBot-1.0.1-TEST.jar)
-    // Agar "-fat" qo'shimchasi bilan kerak bo'lsa, buni qoldiring
-    // archiveClassifier.set("fat") 
-    // Yoki butunlay olib tashlang, shunda FoodBot-1.0.1-TEST.jar bo'ladi
-    archiveClassifier.set("") // ✅ "-fat" qo'shimchasisiz, standart nom bilan yaratish uchun
-}
+
 
 
 kotlin {
