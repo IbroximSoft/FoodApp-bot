@@ -5,6 +5,7 @@ data class UserData(
     var number: String = "",
     var chatId: String = "",
     var uniqueId: String = "",
-    var fileId: String = "",
+    val messageId: String = "",
+    val fromChatId: String = "",
     var bought: String = ""
 )

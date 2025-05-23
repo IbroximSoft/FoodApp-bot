@@ -25,27 +25,6 @@ class FirebaseService {
             FirebaseApp.initializeApp(options)
         }
     }
-
-    suspend fun getAllUsers(): List<UserData> = suspendCoroutine { continuation ->
-        val ref = FirebaseDatabase.getInstance().getReference("food_clients")
-
-        ref.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val userList = mutableListOf<UserData>()
-                for (child in snapshot.children) {
-                    val user = child.getValue(UserData::class.java)
-                    if (user != null) {
-                        userList.add(user)
-                    }
-                }
-                continuation.resume(userList)
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                continuation.resumeWithException(error.toException())
-            }
-        })
-    }
 }
 
 

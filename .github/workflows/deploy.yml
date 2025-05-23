@@ -1,0 +1,40 @@
+name: Deploy to DigitalOcean Droplet
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    # Bu  GitHub'ning virtual kompyuterida bajariladi
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1-qadam: Kodingizni GitHub'dan tortib oladi
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2-qadam: Java 17 ni sozlaydi
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # 3-qadam: Gradle wrapperga ishga tushirish huquqini beradi
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      # 4-qadam: Serverga SSH orqali ulanib, kerakli buyruqlarni bajaradi
+      - name: Deploy to Droplet
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DROPLET_HOST }}         # Server IP manzili
+          username: ${{ secrets.DROPLET_USERNAME }}   # Odatda "root"
+          key: ${{ secrets.SSH_PRIVATE_KEY }}        # Serverga kirish uchun SSH kalit
+          script: |
+            cd /root/FoodApp-bot
+            git pull
+            ./gradlew clean shadowJar --no-daemon
+            sudo systemctl restart foodapp-bot.service
+            echo "Deployment finished!"

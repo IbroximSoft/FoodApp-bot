@@ -13,7 +13,8 @@ import java.io.File
 import java.util.*
 import javax.imageio.ImageIO
 
-fun randomQRCode(bot: Bot): Pair<String, String>? {
+//-1002561324885
+fun randomQRCode(bot: Bot): Triple<String, Long, Long>? {
     val uniqueId = UUID.randomUUID().toString()
     val qrImage = generateQrCode(uniqueId)
 
@@ -28,19 +29,12 @@ fun randomQRCode(bot: Bot): Pair<String, String>? {
     }
 
     val message = response?.body()?.result
-
     if (message == null) {
         println("❌ Message null, response: $response")
         return null
     }
 
-    val fileId = message.photo?.lastOrNull()?.fileId
-
-    return if (fileId != null) {
-        uniqueId to fileId
-    } else {
-        null
-    }
+    return Triple(uniqueId, message.messageId, message.chat.id)
 }
 
 fun generateQrCode(content: String): File {

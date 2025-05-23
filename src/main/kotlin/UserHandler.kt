@@ -22,11 +22,12 @@ import kotlin.coroutines.suspendCoroutine
 
 class UserHandler(private val bot: Bot) {
 
-    fun getCachedUser(key: String): UserData? {
-        return UserCacheManager.getUser(key)
+    fun getCachedUser(phone: String): UserData? {
+        val cached = UserCacheManager.getUser(phone)
+        return cached
     }
 
-    private fun saveToCache(key: String, user: UserData) {
+    fun saveToCache(key: String, user: UserData) {
         UserCacheManager.saveUser(key, user)
     }
 
@@ -52,13 +53,14 @@ class UserHandler(private val bot: Bot) {
                 // Yangi foydalanuvchi - QR kod yaratish
                 val qrInfo = randomQRCode(bot)
                 if (qrInfo != null) {
-                    val (uniqueId, fileId) = qrInfo
+                    val (uniqueId, fileId, fromChatId) = qrInfo
                     val newUser = UserData(
                         name = fromUser.firstName,
                         number = phone,
                         chatId = fromUser.id.toString(),
                         uniqueId = uniqueId,
-                        fileId = fileId
+                        messageId = fileId.toString(),
+                        fromChatId = fromChatId.toString() // ✅ To‘g‘rilash kerak
                     )
 
                     // Firebase'ga saqlash
@@ -84,7 +86,7 @@ class UserHandler(private val bot: Bot) {
         bot.sendMessage(chatId, "Hurmatli mijoz kerakli bo'limni tanlang", replyMarkup = keyboard)
     }
 
-    private suspend fun getUserByNumber(number: String): UserData? {
+    suspend fun getUserByNumber(number: String): UserData? {
         // Avval cache dan
         UserCacheManager.getUser(number)?.let {
             return it
@@ -92,7 +94,7 @@ class UserHandler(private val bot: Bot) {
 
         // So'ng Firebase dan
         return suspendCoroutine { cont ->
-            val ref = FirebaseDatabase.getInstance().getReference("food_clients")
+            val ref = FirebaseDatabase.getInstance().getReference("mangal_clients")
             ref.addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     for (child in snapshot.children) {
@@ -113,9 +115,30 @@ class UserHandler(private val bot: Bot) {
         }
     }
 
+    //mangal_clients
+    suspend fun getUserByChatId(chatId: String): UserData? = suspendCoroutine { cont ->
+        val ref = FirebaseDatabase.getInstance().getReference("mangal_clients")
+        ref.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                for (child in snapshot.children) {
+                    val user = child.getValue(UserData::class.java)
+                    if (user?.chatId == chatId) {
+                        cont.resume(user)
+                        return
+                    }
+                }
+                cont.resume(null)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                cont.resumeWithException(error.toException())
+            }
+        })
+    }
+
     private fun saveUserToDatabase(user: UserData) {
         val db = FirebaseDatabase.getInstance()
-        val ref = db.getReference("food_clients")
+        val ref = db.getReference("mangal_clients")
         ref.child(user.uniqueId).setValueAsync(user)
     }
 
@@ -201,17 +224,19 @@ class UserHandler(private val bot: Bot) {
 
                 // Rasm 2 (alohida rasm sifatida)
                 if (!image.isNullOrBlank()) {
-                    bot.sendPhoto(
+                    bot.copyMessage(
+                        fromChatId = ChatId.fromId(-1002561324885),
                         chatId = chatId,
-                        photo = TelegramFile.ByFileId(image)
+                        messageId = image.toLong()
                     )
                 }
 
                 // Rasm 1
                 if (!imageTwo.isNullOrBlank()) {
-                    bot.sendPhoto(
+                    bot.copyMessage(
+                        fromChatId = ChatId.fromId(-1002561324885),
                         chatId = chatId,
-                        photo = TelegramFile.ByFileId(imageTwo),
+                        messageId = imageTwo.toLong(),
                         caption = caption,
                         parseMode = ParseMode.MARKDOWN,
                         replyMarkup = locationButton
@@ -230,7 +255,7 @@ class UserHandler(private val bot: Bot) {
 
     fun tradeHistory(bot: Bot, chatId: ChatId, uniqueId: String){
         val db = FirebaseDatabase.getInstance()
-        val ref = db.getReference("food_clients").child(uniqueId)
+        val ref = db.getReference("mangal_clients").child(uniqueId)
         val refAbout = db.getReference("food_about").child("CRlCt5DVl0PWpgdVIoMLGasg0Yv2")
 
         refAbout.addListenerForSingleValueEvent(object : ValueEventListener {

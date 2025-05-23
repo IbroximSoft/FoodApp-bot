@@ -5,7 +5,9 @@ import uz.ibrohim.food.data.UserData
 object UserCacheManager {
     val cache = mutableMapOf<String, UserData>()
 
-    fun getUser(key: String): UserData? = cache[key]
+    fun getUser(phone: String): UserData? {
+        return cache[phone]
+    }
 
     fun saveUser(key: String, user: UserData) {
         cache[key] = user

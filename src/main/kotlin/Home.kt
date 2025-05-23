@@ -5,6 +5,7 @@ import com.github.kotlintelegrambot.dispatch
 import com.github.kotlintelegrambot.dispatcher.*
 import com.github.kotlintelegrambot.entities.ChatId
 import com.github.kotlintelegrambot.entities.TelegramFile
+import com.github.kotlintelegrambot.types.TelegramBotResult
 import uz.ibrohim.food.state.State
 import uz.ibrohim.food.state.Step
 import uz.ibrohim.food.utils.askForPhoneNumber
@@ -21,6 +22,7 @@ fun main() {
 
     bot.startPolling()
 }
+
 private val userState = mutableMapOf<Long, State>()
 
 fun handleContactReception(dispatcher: Dispatcher) {
@@ -57,25 +59,84 @@ fun handleContactReception(dispatcher: Dispatcher) {
         when (message.text) {
             "🎫 QR-Kodim" -> {
                 val handler = UserHandler(bot)
-                val phoneNumber = handler.getPhoneNumberFromCache(message.from!!.id.toString()) // mana bu qo‘shimcha
-                if (phoneNumber != null) {
-                    val cachedUser = handler.getCachedUser(phoneNumber)
-                    if (cachedUser != null) {
-                        bot.sendPhoto(
-                            chatId = ChatId.fromId(message.chat.id),
-                            photo = TelegramFile.ByFileId(cachedUser.fileId),
-                            caption = "Sizning QR-Kodingiz"
-                        )
-                        return@message
+                val fromId = message.from!!.id.toString()
+                var phoneNumber = handler.getPhoneNumberFromCache(fromId)
+
+                // ⏳ 1. "Yuklanmoqda" xabarini chiqaramiz
+                val loadingResponse = bot.sendMessage(
+                    chatId = ChatId.fromId(message.chat.id),
+                    text = "⏳ QR kod yuklanmoqda..."
+                )
+
+                val loadingMessageId = if (loadingResponse is TelegramBotResult.Success) {
+                    loadingResponse.value.messageId
+                } else {
+                    null
+                }
+
+                if (phoneNumber == null) {
+                    val userFromFirebase = handler.getUserByChatId(fromId)
+                    if (userFromFirebase != null) {
+                        phoneNumber = userFromFirebase.number
+                        handler.saveToCache(phoneNumber, userFromFirebase)
                     }
                 }
-                bot.sendMessage(ChatId.fromId(message.chat.id), "❌ QR kod topilmadi.")
+
+                if (phoneNumber != null) {
+                    var cachedUser = handler.getCachedUser(phoneNumber)
+
+                    if (cachedUser == null) {
+                        cachedUser = handler.getUserByNumber(phoneNumber)
+                        if (cachedUser != null) {
+                            handler.saveToCache(phoneNumber, cachedUser)
+                        }
+                    }
+
+                    if (cachedUser != null) {
+                        try {
+                            val copyResult = bot.copyMessage(
+                                fromChatId = ChatId.fromId(cachedUser.fromChatId.toLong()),
+                                chatId = ChatId.fromId(chatId),
+                                messageId = cachedUser.messageId.toLong(),
+                                caption = "Sizning QR kodingiz"
+                            )
+
+                            val exception = copyResult.second
+                            if (exception != null) {
+                                println("❌ copyMessage error (handled): $exception")
+                            }
+
+                            // ✅ Yuklanmoqda xabarini o‘chirish
+                            if (loadingMessageId != null) {
+                                bot.deleteMessage(
+                                    chatId = ChatId.fromId(message.chat.id),
+                                    messageId = loadingMessageId
+                                )
+                            }
+
+                            return@message
+                        } catch (e: Exception) {
+                            println("❌ Exception while copying message: ${e.message}")
+                            e.printStackTrace()
+                        }
+                    }
+                }
+
+                // ❌ Topilmasa
+                if (loadingMessageId != null) {
+                    bot.deleteMessage(
+                        chatId = ChatId.fromId(message.chat.id),
+                        messageId = loadingMessageId
+                    )
+                }
+                bot.sendMessage(ChatId.fromId(chatId), "❌ QR kod topilmadi.")
             }
 
             "🍽 Menyu (Taomlar)" -> {
-                bot.sendPhoto(
-                    chatId = ChatId.fromId(message.chat.id),
-                    photo = TelegramFile.ByFileId("AgACAgIAAyEFAASYqrdVAAMUaCNuauHIS4rkKQpfEuzVwKi0RDIAAuntMRvk5xlJ0FMGxeNuyycBAAMCAAN5AAM2BA")
+                bot.copyMessage(
+                    fromChatId = ChatId.fromId(-1002561324885),
+                    chatId = ChatId.fromId(chatId),
+                    messageId = 28
                 )
             }
 
