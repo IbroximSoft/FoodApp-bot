@@ -162,7 +162,7 @@ class UserHandler(private val bot: Bot) {
     }
 
     fun checkCafeStatus(chatId: ChatId) {
-        val ref = FirebaseDatabase.getInstance().getReference("food_about").child("CRlCt5DVl0PWpgdVIoMLGasg0Yv2")
+        val ref = FirebaseDatabase.getInstance().getReference("mangal_about").child("CRlCt5DVl0PWpgdVIoMLGasg0Yv2")
 
         ref.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -185,7 +185,7 @@ class UserHandler(private val bot: Bot) {
     fun cafeAbout(chatId: ChatId) {
         val loadingMsg = bot.sendMessage(chatId, "⏳ Kafe haqida ma'lumot olinmoqda...").getOrNull()
         val ref = FirebaseDatabase.getInstance()
-            .getReference("food_about")
+            .getReference("mangal_about")
             .child("CRlCt5DVl0PWpgdVIoMLGasg0Yv2")
 
         ref.addListenerForSingleValueEvent(object : ValueEventListener {
@@ -256,7 +256,7 @@ class UserHandler(private val bot: Bot) {
     fun tradeHistory(bot: Bot, chatId: ChatId, uniqueId: String){
         val db = FirebaseDatabase.getInstance()
         val ref = db.getReference("mangal_clients").child(uniqueId)
-        val refAbout = db.getReference("food_about").child("CRlCt5DVl0PWpgdVIoMLGasg0Yv2")
+        val refAbout = db.getReference("mangal_about").child("CRlCt5DVl0PWpgdVIoMLGasg0Yv2")
 
         refAbout.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {

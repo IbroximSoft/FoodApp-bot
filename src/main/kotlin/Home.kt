@@ -13,7 +13,7 @@ import uz.ibrohim.food.utils.askForPhoneNumber
 fun main() {
     FirebaseService()
     val bot = bot {
-        token = "5774652487:AAFPup9Dg-ihLoIZOAI564wgoJOc1IR30sc"
+        token = "7843519631:AAHQu_y1HlKMkaVdzY1LzroHZ_gpb4aftyM"
 
         dispatch {
             handleContactReception(this)
