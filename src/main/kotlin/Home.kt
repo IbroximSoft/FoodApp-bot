@@ -10,14 +10,17 @@ import uz.ibrohim.food.state.Step
 import uz.ibrohim.food.utils.askForPhoneNumber
 
 fun main() {
-    println("Salom! Dastur test rejimida ishga tushdi!") 
-    /*
-    FirebaseService() // TEST UCHUN
-    val bot = bot { ... }
-    bot.startPolling()
-    */
-}
+    FirebaseService()
+    val bot = bot {
+        token = "5774652487:AAFPup9Dg-ihLoIZOAI564wgoJOc1IR30sc"
 
+        dispatch {
+            handleContactReception(this)
+        }
+    }
+
+    bot.startPolling()
+}
 private val userState = mutableMapOf<Long, State>()
 
 fun handleContactReception(dispatcher: Dispatcher) {
