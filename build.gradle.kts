@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm") version "2.1.10"
+    kotlin("jvm") version "1.9.20"
     id("application") // ❗ `application` ni to‘g‘ri qo‘shish
 }
 
@@ -49,10 +49,8 @@ tasks.jar {
     manifest {
         attributes["Main-Class"] = "uz.ibrohim.food.HomeKt"
     }
-    // QUYIDAGI QATOR KUTUBXONALARNI JAR FAYLIGA QO'SHADI:
-    from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) }) {
-        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
 }
 
 kotlin {
