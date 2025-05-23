@@ -168,8 +168,8 @@ class UserHandler(private val bot: Bot) {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val status = snapshot.child("open_closed").getValue(String::class.java)
                 val message = when (status) {
-                    "open" -> "✅ Kafe hozir ochiq."
-                    "closed" -> "❌ Kafe hozir yopiq."
+                    "open" -> "✅ Kafe hozir ochiq!"
+                    "closed" -> "❌ Kafe hozir yopiq!"
                     else -> "ℹ️ Kafe holati noma'lum."
                 }
 
