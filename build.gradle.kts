@@ -45,6 +45,15 @@ application {  // ✅ To‘g‘ri ishlatish
 tasks.test {
     useJUnitPlatform()
 }
+tasks.shadowJar {
+    archiveBaseName.set("FoodBot")
+    archiveClassifier.set("fat")
+    archiveVersion.set(project.version.toString()) // Loyiha versiyasini avtomatik oladi
+    mergeServiceFiles()
+    manifest {
+        attributes(mapOf("Main-Class" to "uz.ibrohim.food.HomeKt"))
+    }
+}
 
 
 kotlin {
