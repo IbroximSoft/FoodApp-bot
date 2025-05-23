@@ -1,6 +1,7 @@
 plugins {
     kotlin("jvm") version "1.9.20"
     id("application") // ❗ `application` ni to‘g‘ri qo‘shish
+    id("com.github.johnrengelman.shadow") version "8.1.1" 
 }
 
 group = "uz.ibrohim.food"
@@ -45,13 +46,6 @@ tasks.test {
     useJUnitPlatform()
 }
 
-tasks.jar {
-    manifest {
-        attributes["Main-Class"] = "uz.ibrohim.food.HomeKt"
-    }
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
-}
 
 kotlin {
     jvmToolchain(17)
