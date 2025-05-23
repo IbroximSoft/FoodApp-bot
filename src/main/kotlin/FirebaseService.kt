@@ -15,7 +15,7 @@ import kotlin.coroutines.suspendCoroutine
 
 class FirebaseService {
     init {
-        val serviceAccount = FileInputStream("firebase_adminsdk.json")
+        val serviceAccount = FileInputStream("/root/firebase_adminsdk.json")
         val options = FirebaseOptions.builder()
             .setCredentials(GoogleCredentials.fromStream(serviceAccount))
             .setDatabaseUrl("https://jizzax-lor-default-rtdb.firebaseio.com/") // <- Realtime DB URL
